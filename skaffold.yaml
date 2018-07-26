@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/hwacookie/fourth:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/hwacookie/fourth:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: fourth
+        chartPath: charts/fourth
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/hwacookie/fourth"
+          image.tag: "{{.TAG}}"
